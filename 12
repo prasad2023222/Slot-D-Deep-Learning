@@ -1,0 +1,149 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 1. Load MNIST Dataset
+(X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
+
+# 2. Normalize Dataset
+X_train = X_train / 255.0
+X_test = X_test / 255.0
+
+# 3. Reshape Images
+X_train = X_train.reshape(-1, 28, 28, 1)
+X_test = X_test.reshape(-1, 28, 28, 1)
+
+# Use smaller dataset for faster comparison
+X_train = X_train[:12000]
+y_train = y_train[:12000]
+
+X_test = X_test[:2000]
+y_test = y_test[:2000]
+
+# 4. Function to Create CNN Model
+def create_cnn(filters, kernel_size):
+
+    model = keras.Sequential([
+        layers.Input(shape=(28, 28, 1)),
+
+        layers.Conv2D(
+            filters,
+            kernel_size,
+            activation='relu'
+        ),
+
+        layers.MaxPooling2D((2, 2)),
+
+        layers.Flatten(),
+
+        layers.Dense(64, activation='relu'),
+
+        layers.Dense(10, activation='softmax')
+    ])
+
+    model.compile(
+        optimizer='adam',
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+# 5. Define CNN Architectures
+configurations = [
+    (16, (3, 3)),
+    (32, (3, 3)),
+    (64, (5, 5))
+]
+
+names = [
+    "CNN-16 Filters",
+    "CNN-32 Filters",
+    "CNN-64 Filters"
+]
+
+accuracy_results = []
+loss_results = []
+histories = []
+
+# 6. Train and Compare Models
+for i, config in enumerate(configurations):
+
+    print("\nTraining:", names[i])
+
+    model = create_cnn(
+        config[0],
+        config[1]
+    )
+
+    history = model.fit(
+        X_train,
+        y_train,
+        epochs=5,
+        batch_size=64,
+        validation_split=0.2,
+        verbose=1
+    )
+
+    test_loss, test_accuracy = model.evaluate(
+        X_test, y_test, verbose=0
+    )
+
+    accuracy_results.append(test_accuracy)
+    loss_results.append(test_loss)
+    histories.append(history)
+
+    print("Test Accuracy:", test_accuracy * 100, "%")
+    print("Test Loss:", test_loss)
+
+# 7. Compare Accuracy
+plt.figure(figsize=(10, 5))
+
+plt.bar(names, accuracy_results)
+
+plt.title("CNN Architecture Accuracy Comparison")
+plt.xlabel("CNN Architecture")
+plt.ylabel("Test Accuracy")
+plt.grid(axis='y')
+
+plt.show()
+
+# 8. Compare Loss
+plt.figure(figsize=(10, 5))
+
+plt.bar(names, loss_results)
+
+plt.title("CNN Architecture Loss Comparison")
+plt.xlabel("CNN Architecture")
+plt.ylabel("Test Loss")
+plt.grid(axis='y')
+
+plt.show()
+
+# 9. Compare Training Accuracy
+plt.figure(figsize=(10, 5))
+
+for i, history in enumerate(histories):
+
+    plt.plot(
+        history.history['accuracy'],
+        label=names[i]
+    )
+
+plt.title("Training Accuracy Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.grid()
+
+plt.show()
+
+# 10. Display Best Architecture
+best_index = np.argmax(accuracy_results)
+
+print("\nBEST CNN ARCHITECTURE:")
+print(names[best_index])
+print("Accuracy:", accuracy_results[best_index] * 100, "%")

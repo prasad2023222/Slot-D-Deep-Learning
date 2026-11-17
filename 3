@@ -1,0 +1,74 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm, binom, poisson
+
+# 1. Normal Distribution
+x = np.linspace(-5, 5, 100)
+normal = norm.pdf(x, loc=0, scale=1)
+
+# 2. Binomial Distribution
+n = 10
+p = 0.5
+x_bin = np.arange(0, n+1)
+binomial = binom.pmf(x_bin, n, p)
+
+# 3. Poisson Distribution
+x_poi = np.arange(0, 15)
+poisson_dist = poisson.pmf(x_poi, mu=5)
+
+# 4. Bayes' Theorem
+P_A = 0.01
+P_B_given_A = 0.95
+P_B_given_not_A = 0.05
+
+P_not_A = 1 - P_A
+
+P_B = (P_B_given_A * P_A) + (P_B_given_not_A * P_not_A)
+
+P_A_given_B = (P_B_given_A * P_A) / P_B
+
+print("PROBABILITY DISTRIBUTIONS")
+print("Normal Distribution Mean:", norm.mean(loc=0, scale=1))
+print("Binomial Distribution Mean:", binom.mean(n, p))
+print("Poisson Distribution Mean:", poisson.mean(mu=5))
+
+print("\nBAYES' THEOREM")
+print("P(A):", P_A)
+print("P(B):", P_B)
+print("P(A|B):", P_A_given_B)
+
+# 5. Visualization
+plt.figure(figsize=(12, 8))
+
+# Normal Distribution
+plt.subplot(2, 2, 1)
+plt.plot(x, normal)
+plt.title("Normal Distribution")
+plt.xlabel("Values")
+plt.ylabel("Probability Density")
+plt.grid()
+
+# Binomial Distribution
+plt.subplot(2, 2, 2)
+plt.bar(x_bin, binomial)
+plt.title("Binomial Distribution")
+plt.xlabel("Number of Successes")
+plt.ylabel("Probability")
+
+# Poisson Distribution
+plt.subplot(2, 2, 3)
+plt.bar(x_poi, poisson_dist)
+plt.title("Poisson Distribution")
+plt.xlabel("Number of Events")
+plt.ylabel("Probability")
+
+# Bayes' Theorem
+plt.subplot(2, 2, 4)
+plt.bar(["P(A)", "P(A|B)"],
+        [P_A, P_A_given_B])
+plt.title("Bayes' Theorem")
+plt.ylabel("Probability")
+
+plt.tight_layout()
+plt.show()

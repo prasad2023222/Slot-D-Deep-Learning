@@ -1,0 +1,134 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 1. Generate Sequential Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+data = np.sin(np.arange(0, 200, 0.1))
+
+X = []
+y = []
+
+for i in range(len(data) - 10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X).reshape(-1, 10, 1)
+y = np.array(y)
+
+# 2. Split Dataset
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+
+y_train = y[:split]
+y_test = y[split:]
+
+# 3. Define Model Architectures
+def create_model(model_type, units):
+
+    model = keras.Sequential()
+    model.add(layers.Input(shape=(10, 1)))
+
+    if model_type == "RNN":
+        model.add(layers.SimpleRNN(units))
+
+    elif model_type == "LSTM":
+        model.add(layers.LSTM(units))
+
+    elif model_type == "GRU":
+        model.add(layers.GRU(units))
+
+    model.add(layers.Dense(1))
+
+    model.compile(
+        optimizer='adam',
+        loss='mse',
+        metrics=['mae']
+    )
+
+    return model
+
+# 4. Define Hyperparameters
+model_types = ["RNN", "LSTM", "GRU"]
+units_list = [16, 32, 64]
+
+results = {}
+histories = {}
+
+# 5. Train Models
+for model_type in model_types:
+
+    for units in units_list:
+
+        name = model_type + " - " + str(units)
+
+        print("\nTraining:", name)
+
+        model = create_model(model_type, units)
+
+        history = model.fit(
+            X_train,
+            y_train,
+            epochs=10,
+            batch_size=32,
+            validation_split=0.2,
+            verbose=0
+        )
+
+        loss, mae = model.evaluate(
+            X_test, y_test, verbose=0
+        )
+
+        results[name] = loss
+        histories[name] = history
+
+        print("Test Loss:", round(loss, 5))
+        print("Test MAE:", round(mae, 5))
+
+# 6. Compare Model Performance
+plt.figure(figsize=(12, 5))
+
+plt.bar(
+    results.keys(),
+    results.values()
+)
+
+plt.title("RNN, LSTM and GRU Comparison")
+plt.xlabel("Model and Units")
+plt.ylabel("Test Loss")
+plt.xticks(rotation=45)
+plt.grid(axis='y')
+plt.tight_layout()
+plt.show()
+
+# 7. Visualize Training Loss
+plt.figure(figsize=(12, 6))
+
+for name, history in histories.items():
+
+    plt.plot(
+        history.history['loss'],
+        label=name
+    )
+
+plt.title("Training Loss Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 8. Display Best Model
+best_model = min(results, key=results.get)
+
+print("\nBEST MODEL:")
+print(best_model)
+
+print("Lowest Test Loss:", results[best_model])

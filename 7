@@ -1,0 +1,128 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Perceptron Implementation
+
+# Input data (AND Gate)
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+y = np.array([0, 0, 0, 1])
+
+# Initialize weights and bias
+weights = np.zeros(2)
+bias = 0
+learning_rate = 0.1
+
+# Step Activation Function
+def activation(z):
+    return 1 if z >= 0 else 0
+
+# Train Perceptron
+for epoch in range(10):
+    for i in range(len(X)):
+        z = np.dot(X[i], weights) + bias
+        prediction = activation(z)
+
+        error = y[i] - prediction
+
+        weights += learning_rate * error * X[i]
+        bias += learning_rate * error
+
+print("PERCEPTRON RESULTS")
+print("Weights:", weights)
+print("Bias:", bias)
+
+for i in range(len(X)):
+    z = np.dot(X[i], weights) + bias
+    prediction = activation(z)
+    print(X[i], "Prediction:", prediction)
+
+# 2. Forward Propagation
+
+# Input layer
+inputs = np.array([[0.5, 0.8]])
+
+# Weights and biases
+W1 = np.array([
+    [0.2, 0.4],
+    [0.3, 0.5]
+])
+
+b1 = np.array([0.1, 0.1])
+
+W2 = np.array([
+    [0.6],
+    [0.7]
+])
+
+b2 = np.array([0.2])
+
+# Sigmoid Activation Function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Hidden Layer
+hidden_input = np.dot(inputs, W1) + b1
+hidden_output = sigmoid(hidden_input)
+
+# Output Layer
+final_input = np.dot(hidden_output, W2) + b2
+final_output = sigmoid(final_input)
+
+print("\nFORWARD PROPAGATION")
+print("Input:", inputs)
+print("Hidden Layer Output:", hidden_output)
+print("Final Output:", final_output)
+
+# 3. Visualization
+
+plt.figure(figsize=(12, 5))
+
+# Perceptron Decision Boundary
+plt.subplot(1, 2, 1)
+
+plt.scatter(X[:, 0], X[:, 1],
+            c=y, cmap='coolwarm', s=100)
+
+x_line = np.linspace(-0.2, 1.2, 100)
+
+if weights[1] != 0:
+    y_line = -(weights[0] * x_line + bias) / weights[1]
+    plt.plot(x_line, y_line, color='black')
+
+plt.xlabel("Input X1")
+plt.ylabel("Input X2")
+plt.title("Perceptron Decision Boundary")
+plt.grid()
+
+# Forward Propagation Visualization
+plt.subplot(1, 2, 2)
+
+values = [
+    inputs[0, 0],
+    inputs[0, 1],
+    hidden_output[0, 0],
+    hidden_output[0, 1],
+    final_output[0, 0]
+]
+
+labels = [
+    "Input 1", "Input 2",
+    "Hidden 1", "Hidden 2",
+    "Output"
+]
+
+plt.bar(labels, values)
+plt.title("Forward Propagation Output")
+plt.ylabel("Activation Value")
+plt.xticks(rotation=20)
+plt.grid(axis='y')
+
+plt.tight_layout()
+plt.show()

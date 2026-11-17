@@ -1,0 +1,137 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 1. Generate Sequential Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+data = np.sin(np.arange(0, 200, 0.1))
+
+# 2. Create Sequences
+X = []
+y = []
+
+for i in range(len(data) - 10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X).reshape(-1, 10, 1)
+y = np.array(y)
+
+# 3. Split Dataset
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+
+y_train = y[:split]
+y_test = y[split:]
+
+# 4. Create RNN Model
+rnn_model = keras.Sequential([
+    layers.Input(shape=(10, 1)),
+    layers.SimpleRNN(32, activation='tanh'),
+    layers.Dense(1)
+])
+
+rnn_model.compile(
+    optimizer='adam',
+    loss='mse',
+    metrics=['mae']
+)
+
+# 5. Train RNN
+rnn_history = rnn_model.fit(
+    X_train, y_train,
+    epochs=10,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 6. Create LSTM Model
+lstm_model = keras.Sequential([
+    layers.Input(shape=(10, 1)),
+    layers.LSTM(32),
+    layers.Dense(1)
+])
+
+lstm_model.compile(
+    optimizer='adam',
+    loss='mse',
+    metrics=['mae']
+)
+
+# 7. Train LSTM
+lstm_history = lstm_model.fit(
+    X_train, y_train,
+    epochs=10,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 8. Evaluate Models
+rnn_loss, rnn_mae = rnn_model.evaluate(
+    X_test, y_test, verbose=0
+)
+
+lstm_loss, lstm_mae = lstm_model.evaluate(
+    X_test, y_test, verbose=0
+)
+
+print("RNN PERFORMANCE")
+print("Test Loss:", rnn_loss)
+print("Test MAE:", rnn_mae)
+
+print("\nLSTM PERFORMANCE")
+print("Test Loss:", lstm_loss)
+print("Test MAE:", lstm_mae)
+
+# 9. Predictions
+rnn_pred = rnn_model.predict(X_test)
+lstm_pred = lstm_model.predict(X_test)
+
+# 10. Plot Actual vs Predicted
+plt.figure(figsize=(12, 5))
+
+plt.plot(y_test[:100], label="Actual")
+plt.plot(rnn_pred[:100], label="RNN")
+plt.plot(lstm_pred[:100], label="LSTM")
+
+plt.title("RNN vs LSTM Prediction")
+plt.xlabel("Time Steps")
+plt.ylabel("Values")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 11. Compare Training Loss
+plt.figure(figsize=(8, 5))
+
+plt.plot(rnn_history.history['loss'], label="RNN Loss")
+plt.plot(lstm_history.history['loss'], label="LSTM Loss")
+
+plt.title("RNN and LSTM Training Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 12. Compare Test Loss
+plt.figure(figsize=(7, 5))
+
+plt.bar(
+    ["RNN", "LSTM"],
+    [rnn_loss, lstm_loss]
+)
+
+plt.title("RNN vs LSTM Test Loss")
+plt.ylabel("Mean Squared Error")
+plt.grid(axis='y')
+plt.show()

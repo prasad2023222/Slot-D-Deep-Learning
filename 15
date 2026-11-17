@@ -1,0 +1,116 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Define Input Sequence
+X = np.array([1.0, 2.0, 3.0])
+
+# Target Output
+target = 1.0
+
+# 2. Initialize Weights and Bias
+Wx = 0.5
+Wh = 0.4
+Wy = 0.8
+b = 0.1
+
+# Learning Rate
+lr = 0.01
+
+# 3. Forward Propagation
+h = [0.0]
+outputs = []
+
+for t in range(len(X)):
+    ht = np.tanh(Wx * X[t] + Wh * h[t] + b)
+    h.append(ht)
+
+    yt = Wy * ht
+    outputs.append(yt)
+
+print("FORWARD PROPAGATION")
+print("Hidden States:", np.round(h[1:], 4))
+print("Outputs:", np.round(outputs, 4))
+
+# 4. Calculate Loss
+loss = 0.5 * (target - outputs[-1]) ** 2
+
+print("\nLOSS:")
+print(loss)
+
+# 5. Backpropagation Through Time
+dWy = 0.0
+dWx = 0.0
+dWh = 0.0
+db = 0.0
+
+# Gradient at final output
+dh = (outputs[-1] - target) * Wy
+
+# Backward through time
+gradients = []
+
+for t in reversed(range(len(X))):
+
+    # Derivative of tanh
+    dz = dh * (1 - h[t+1] ** 2)
+
+    gradients.append(abs(dz))
+
+    dWy += (outputs[-1] - target) * h[t+1]
+    dWx += dz * X[t]
+    dWh += dz * h[t]
+    db += dz
+
+    dh = dz * Wh
+
+print("\nBPTT GRADIENTS")
+print("Gradient Wx:", dWx)
+print("Gradient Wh:", dWh)
+print("Gradient Wy:", dWy)
+print("Gradient Bias:", db)
+
+# 6. Update Weights
+Wx -= lr * dWx
+Wh -= lr * dWh
+Wy -= lr * dWy
+b -= lr * db
+
+print("\nUPDATED WEIGHTS")
+print("Wx:", Wx)
+print("Wh:", Wh)
+print("Wy:", Wy)
+print("Bias:", b)
+
+# 7. Visualize Gradient Flow
+plt.figure(figsize=(8, 5))
+
+plt.plot(
+    [3, 2, 1],
+    gradients,
+    marker='o',
+    linewidth=2
+)
+
+plt.xlabel("Time Steps")
+plt.ylabel("Gradient Magnitude")
+plt.title("Backpropagation Through Time")
+plt.xticks([1, 2, 3])
+plt.grid()
+plt.show()
+
+# 8. Visualize Hidden States
+plt.figure(figsize=(8, 5))
+
+plt.plot(
+    [1, 2, 3],
+    h[1:],
+    marker='s',
+    color='red'
+)
+
+plt.xlabel("Time Steps")
+plt.ylabel("Hidden State")
+plt.title("RNN Hidden State Analysis")
+plt.grid()
+plt.show()

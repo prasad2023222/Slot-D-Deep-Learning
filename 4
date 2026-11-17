@@ -1,0 +1,63 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import entropy
+
+# 1. Define Probability Distributions
+P = np.array([0.4, 0.3, 0.2, 0.1])
+Q = np.array([0.3, 0.4, 0.2, 0.1])
+
+print("Probability Distribution P:", P)
+print("Probability Distribution Q:", Q)
+
+# 2. Calculate Entropy
+H_P = entropy(P, base=2)
+
+print("\nENTROPY")
+print("Entropy of P:", H_P)
+
+# 3. Calculate Cross-Entropy
+cross_entropy = -np.sum(P * np.log2(Q))
+
+print("\nCROSS-ENTROPY")
+print("Cross-Entropy of P and Q:", cross_entropy)
+
+# 4. Calculate KL Divergence
+KL_divergence = entropy(P, Q, base=2)
+
+print("\nKL DIVERGENCE")
+print("KL Divergence:", KL_divergence)
+
+# 5. Visualization
+labels = ['Class 1', 'Class 2', 'Class 3', 'Class 4']
+
+plt.figure(figsize=(12, 8))
+
+# Probability Distribution
+plt.subplot(2, 2, 1)
+plt.bar(labels, P, label='P')
+plt.bar(labels, Q, alpha=0.5, label='Q')
+plt.title("Probability Distributions")
+plt.ylabel("Probability")
+plt.legend()
+
+# Entropy
+plt.subplot(2, 2, 2)
+plt.bar(['Entropy'], [H_P])
+plt.title("Entropy")
+plt.ylabel("Bits")
+
+# Cross Entropy
+plt.subplot(2, 2, 3)
+plt.bar(['Cross-Entropy'], [cross_entropy])
+plt.title("Cross-Entropy")
+plt.ylabel("Bits")
+
+# KL Divergence
+plt.subplot(2, 2, 4)
+plt.bar(['KL Divergence'], [KL_divergence])
+plt.title("KL Divergence")
+plt.ylabel("Bits")
+
+plt.tight_layout()
+plt.show()

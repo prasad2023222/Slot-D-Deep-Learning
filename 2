@@ -1,0 +1,60 @@
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Create Dataset
+data = {
+    'Maths': [80, 85, 90, 95, 70],
+    'Science': [75, 80, 85, 90, 65],
+    'English': [70, 75, 80, 85, 60]
+}
+
+df = pd.DataFrame(data)
+
+print("ORIGINAL DATASET:")
+print(df)
+
+# 2. Calculate Covariance Matrix
+cov_matrix = df.cov()
+
+print("\nCOVARIANCE MATRIX:")
+print(cov_matrix)
+
+# 3. Calculate Eigenvalues and Eigenvectors
+eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+
+print("\nEIGENVALUES:")
+print(eigenvalues)
+
+print("\nEIGENVECTORS:")
+print(eigenvectors)
+
+# 4. Visualize Covariance Matrix
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.imshow(cov_matrix, cmap='coolwarm')
+plt.colorbar()
+plt.xticks(range(3), df.columns)
+plt.yticks(range(3), df.columns)
+plt.title("Covariance Matrix")
+
+# 5. Visualize Eigenvalues
+plt.subplot(1, 2, 2)
+plt.bar(range(1, len(eigenvalues)+1), eigenvalues)
+plt.xlabel("Eigenvalue Index")
+plt.ylabel("Eigenvalue")
+plt.title("Eigenvalues Analysis")
+
+plt.tight_layout()
+plt.show()
+
+# 6. Display Eigenvectors
+plt.figure(figsize=(6, 5))
+plt.imshow(eigenvectors, cmap='viridis')
+plt.colorbar()
+plt.title("Eigenvectors Visualization")
+plt.xlabel("Eigenvector Index")
+plt.ylabel("Feature Index")
+plt.show()

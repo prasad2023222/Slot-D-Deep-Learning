@@ -1,0 +1,151 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+
+# 1. Generate Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+X = np.random.rand(1000, 5)
+y = (X.sum(axis=1) > 2.5).astype(int)
+
+# 2. Split Dataset
+X_train = X[:800]
+X_test = X[800:]
+
+y_train = y[:800]
+y_test = y[800:]
+
+# 3. Function to Create Model
+def create_model(use_dropout=False):
+
+    model = keras.Sequential()
+
+    model.add(keras.layers.Input(shape=(5,)))
+    model.add(keras.layers.Dense(64, activation='relu'))
+
+    if use_dropout:
+        model.add(keras.layers.Dropout(0.5))
+
+    model.add(keras.layers.Dense(32, activation='relu'))
+
+    if use_dropout:
+        model.add(keras.layers.Dropout(0.3))
+
+    model.add(keras.layers.Dense(1, activation='sigmoid'))
+
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+
+    return model
+
+# 4. Train Without Dropout and Early Stopping
+model1 = create_model()
+
+history1 = model1.fit(
+    X_train, y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 5. Train With Dropout
+model2 = create_model(use_dropout=True)
+
+history2 = model2.fit(
+    X_train, y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 6. Train With Dropout and Early Stopping
+model3 = create_model(use_dropout=True)
+
+early_stop = keras.callbacks.EarlyStopping(
+    monitor='val_loss',
+    patience=5,
+    restore_best_weights=True
+)
+
+history3 = model3.fit(
+    X_train, y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    callbacks=[early_stop],
+    verbose=0
+)
+
+# 7. Evaluate Models
+models = {
+    "Without Dropout": model1,
+    "With Dropout": model2,
+    "Dropout + Early Stopping": model3
+}
+
+print("MODEL COMPARISON")
+
+for name, model in models.items():
+
+    loss, accuracy = model.evaluate(
+        X_test, y_test, verbose=0
+    )
+
+    print("\n", name)
+    print("Test Loss:", round(loss, 4))
+    print("Test Accuracy:", round(accuracy * 100, 2), "%")
+
+# 8. Plot Training and Validation Loss
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+
+plt.plot(history1.history['val_loss'],
+         label='Without Dropout')
+
+plt.plot(history2.history['val_loss'],
+         label='With Dropout')
+
+plt.plot(history3.history['val_loss'],
+         label='Dropout + Early Stopping')
+
+plt.title("Validation Loss Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid()
+
+# 9. Plot Accuracy
+plt.subplot(1, 2, 2)
+
+plt.plot(history1.history['val_accuracy'],
+         label='Without Dropout')
+
+plt.plot(history2.history['val_accuracy'],
+         label='With Dropout')
+
+plt.plot(history3.history['val_accuracy'],
+         label='Dropout + Early Stopping')
+
+plt.title("Validation Accuracy Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.show()
+
+# 10. Display Early Stopping Information
+print("\nEARLY STOPPING")
+print("Total Epochs Trained:", len(history3.history['loss']))
+print("Best Validation Loss:",
+      min(history3.history['val_loss']))

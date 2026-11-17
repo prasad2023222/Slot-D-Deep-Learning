@@ -1,0 +1,135 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 1. Generate Sequential Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+data = np.sin(np.arange(0, 200, 0.1))
+
+X = []
+y = []
+
+for i in range(len(data) - 20):
+    X.append(data[i:i+20])
+    y.append(data[i+20])
+
+X = np.array(X).reshape(-1, 20, 1)
+y = np.array(y)
+
+# 2. Split Dataset
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+
+y_train = y[:split]
+y_test = y[split:]
+
+# 3. Create RNN Without Gradient Clipping
+model1 = keras.Sequential([
+    layers.Input(shape=(20, 1)),
+    layers.SimpleRNN(32, activation='tanh'),
+    layers.Dense(1)
+])
+
+model1.compile(
+    optimizer=keras.optimizers.Adam(learning_rate=0.01),
+    loss='mse',
+    metrics=['mae']
+)
+
+# 4. Create RNN With Gradient Clipping
+model2 = keras.Sequential([
+    layers.Input(shape=(20, 1)),
+    layers.SimpleRNN(32, activation='tanh'),
+    layers.Dense(1)
+])
+
+model2.compile(
+    optimizer=keras.optimizers.Adam(
+        learning_rate=0.01,
+        clipnorm=1.0
+    ),
+    loss='mse',
+    metrics=['mae']
+)
+
+# 5. Train Without Clipping
+history1 = model1.fit(
+    X_train, y_train,
+    epochs=15,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 6. Train With Gradient Clipping
+history2 = model2.fit(
+    X_train, y_train,
+    epochs=15,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=0
+)
+
+# 7. Evaluate Models
+loss1, mae1 = model1.evaluate(X_test, y_test, verbose=0)
+loss2, mae2 = model2.evaluate(X_test, y_test, verbose=0)
+
+print("WITHOUT GRADIENT CLIPPING")
+print("Test Loss:", loss1)
+print("Test MAE:", mae1)
+
+print("\nWITH GRADIENT CLIPPING")
+print("Test Loss:", loss2)
+print("Test MAE:", mae2)
+
+# 8. Visualize Training Loss
+plt.figure(figsize=(10, 5))
+
+plt.plot(history1.history['loss'],
+         label='Without Clipping')
+
+plt.plot(history2.history['loss'],
+         label='With Clipping')
+
+plt.xlabel("Epochs")
+plt.ylabel("Training Loss")
+plt.title("Gradient Clipping Comparison")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 9. Visualize Validation Loss
+plt.figure(figsize=(10, 5))
+
+plt.plot(history1.history['val_loss'],
+         label='Without Clipping')
+
+plt.plot(history2.history['val_loss'],
+         label='With Clipping')
+
+plt.xlabel("Epochs")
+plt.ylabel("Validation Loss")
+plt.title("Validation Loss Comparison")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 10. Compare Final Performance
+plt.figure(figsize=(7, 5))
+
+plt.bar(
+    ['Without Clipping', 'With Clipping'],
+    [loss1, loss2]
+)
+
+plt.title("Final Test Loss Comparison")
+plt.ylabel("Mean Squared Error")
+plt.grid(axis='y')
+plt.show()

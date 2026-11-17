@@ -1,0 +1,94 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# 1. Generate Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+X = np.random.rand(500, 4)
+
+y = ((X[:, 0] + X[:, 1] +
+      X[:, 2] + X[:, 3]) > 2).astype(int)
+
+# 2. Split Dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# 3. Feature Scaling
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# 4. Build MLP Model
+model = keras.Sequential([
+    keras.layers.Input(shape=(4,)),
+    keras.layers.Dense(16, activation='relu'),
+    keras.layers.Dense(8, activation='relu'),
+    keras.layers.Dense(1, activation='sigmoid')
+])
+
+# 5. Compile Model
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy']
+)
+
+# 6. Display Model Summary
+model.summary()
+
+# 7. Train Model
+history = model.fit(
+    X_train, y_train,
+    epochs=30,
+    batch_size=16,
+    validation_split=0.2,
+    verbose=1
+)
+
+# 8. Evaluate Model
+loss, accuracy = model.evaluate(X_test, y_test)
+
+print("\nMODEL EVALUATION")
+print("Test Loss:", loss)
+print("Test Accuracy:", accuracy * 100, "%")
+
+# 9. Predictions
+predictions = model.predict(X_test[:5])
+
+print("\nPREDICTIONS:")
+for i in range(5):
+    print("Actual:", y_test[i],
+          "Predicted:", int(predictions[i][0] >= 0.5))
+
+# 10. Visualize Accuracy
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Training Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title("MLP Accuracy")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.grid()
+
+# 11. Visualize Loss
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title("MLP Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.show()

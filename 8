@@ -1,0 +1,118 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Create Dataset (XOR Gate)
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+y = np.array([
+    [0],
+    [1],
+    [1],
+    [0]
+])
+
+# 2. Initialize Weights and Biases
+np.random.seed(42)
+
+W1 = np.random.randn(2, 4)
+b1 = np.zeros((1, 4))
+
+W2 = np.random.randn(4, 1)
+b2 = np.zeros((1, 1))
+
+learning_rate = 0.5
+epochs = 10000
+
+# 3. Sigmoid Activation Function
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# Derivative of Sigmoid
+def sigmoid_derivative(x):
+    return x * (1 - x)
+
+# Store Loss
+loss_history = []
+
+# 4. Training Process
+for epoch in range(epochs):
+
+    # Forward Propagation
+    hidden_input = np.dot(X, W1) + b1
+    hidden_output = sigmoid(hidden_input)
+
+    final_input = np.dot(hidden_output, W2) + b2
+    predicted_output = sigmoid(final_input)
+
+    # Calculate Loss
+    loss = np.mean((y - predicted_output) ** 2)
+    loss_history.append(loss)
+
+    # 5. Backpropagation
+    output_error = y - predicted_output
+
+    output_delta = (
+        output_error *
+        sigmoid_derivative(predicted_output)
+    )
+
+    hidden_error = np.dot(output_delta, W2.T)
+
+    hidden_delta = (
+        hidden_error *
+        sigmoid_derivative(hidden_output)
+    )
+
+    # 6. Update Weights and Biases
+    W2 += learning_rate * np.dot(
+        hidden_output.T, output_delta
+    )
+
+    b2 += learning_rate * np.sum(
+        output_delta, axis=0, keepdims=True
+    )
+
+    W1 += learning_rate * np.dot(
+        X.T, hidden_delta
+    )
+
+    b1 += learning_rate * np.sum(
+        hidden_delta, axis=0, keepdims=True
+    )
+
+# 7. Display Final Predictions
+print("FINAL PREDICTIONS:")
+print(np.round(predicted_output, 3))
+
+print("\nFINAL LOSS:")
+print(loss_history[-1])
+
+# 8. Plot Training Loss
+plt.figure(figsize=(8, 5))
+
+plt.plot(loss_history)
+plt.xlabel("Epochs")
+plt.ylabel("Mean Squared Error")
+plt.title("Neural Network Training Loss")
+plt.grid()
+plt.show()
+
+# 9. Visualize Actual vs Predicted Output
+plt.figure(figsize=(8, 5))
+
+plt.plot(y, marker='o', label="Actual Output")
+plt.plot(predicted_output, marker='s',
+         label="Predicted Output")
+
+plt.xlabel("Input Sample")
+plt.ylabel("Output")
+plt.title("Actual vs Predicted Output")
+plt.legend()
+plt.grid()
+plt.show()

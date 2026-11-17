@@ -1,0 +1,77 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+
+# 1. Generate Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+X = np.linspace(-1, 1, 100).reshape(-1, 1)
+y = 3 * X + 2 + np.random.normal(0, 0.1, (100, 1))
+
+# 2. Define Optimizers
+optimizers = {
+    "Gradient Descent": keras.optimizers.SGD(learning_rate=0.01),
+    "SGD": keras.optimizers.SGD(learning_rate=0.01),
+    "Momentum": keras.optimizers.SGD(
+        learning_rate=0.01, momentum=0.9
+    ),
+    "Adam": keras.optimizers.Adam(learning_rate=0.01)
+}
+
+# 3. Train Separate Models
+loss_history = {}
+
+for name, optimizer in optimizers.items():
+
+    model = keras.Sequential([
+        keras.layers.Input(shape=(1,)),
+        keras.layers.Dense(1)
+    ])
+
+    model.compile(
+        optimizer=optimizer,
+        loss='mse'
+    )
+
+    history = model.fit(
+        X, y,
+        epochs=50,
+        batch_size=1 if name == "SGD" else 32,
+        verbose=0
+    )
+
+    loss_history[name] = history.history['loss']
+
+    print(name)
+    print("Final Loss:", round(history.history['loss'][-1], 5))
+    print()
+
+# 4. Plot Loss Comparison
+plt.figure(figsize=(10, 6))
+
+for name, losses in loss_history.items():
+    plt.plot(losses, label=name)
+
+plt.xlabel("Epochs")
+plt.ylabel("Mean Squared Error")
+plt.title("Gradient Descent Optimizers Comparison")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 5. Display Final Loss Comparison
+plt.figure(figsize=(8, 5))
+
+names = list(loss_history.keys())
+final_losses = [losses[-1] for losses in loss_history.values()]
+
+plt.bar(names, final_losses)
+plt.xlabel("Optimization Algorithms")
+plt.ylabel("Final Loss")
+plt.title("Final Loss Comparison")
+plt.xticks(rotation=15)
+plt.grid(axis='y')
+plt.show()

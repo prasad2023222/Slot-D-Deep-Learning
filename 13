@@ -1,0 +1,98 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# 1. Generate Sequential Dataset
+np.random.seed(42)
+tf.random.set_seed(42)
+
+data = np.sin(np.arange(0, 200, 0.1))
+
+# 2. Create Input Sequences
+X = []
+y = []
+
+for i in range(len(data) - 10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X)
+y = np.array(y)
+
+# 3. Reshape Data for RNN
+X = X.reshape(X.shape[0], X.shape[1], 1)
+
+# 4. Split Dataset
+split = int(0.8 * len(X))
+
+X_train = X[:split]
+X_test = X[split:]
+
+y_train = y[:split]
+y_test = y[split:]
+
+# 5. Build RNN Model
+model = keras.Sequential([
+    layers.Input(shape=(10, 1)),
+    layers.SimpleRNN(32, activation='tanh'),
+    layers.Dense(1)
+])
+
+# 6. Compile Model
+model.compile(
+    optimizer='adam',
+    loss='mse',
+    metrics=['mae']
+)
+
+# 7. Display Model
+model.summary()
+
+# 8. Train Model
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=20,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=1
+)
+
+# 9. Predict Values
+predictions = model.predict(X_test)
+
+# 10. Evaluate Model
+loss, mae = model.evaluate(X_test, y_test)
+
+print("\nRNN MODEL RESULTS")
+print("Test Loss:", loss)
+print("Mean Absolute Error:", mae)
+
+# 11. Visualize Actual vs Predicted Values
+plt.figure(figsize=(12, 5))
+
+plt.plot(y_test[:100], label="Actual Values")
+plt.plot(predictions[:100], label="Predicted Values")
+
+plt.title("RNN Sequential Data Prediction")
+plt.xlabel("Time Steps")
+plt.ylabel("Values")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 12. Visualize Training Loss
+plt.figure(figsize=(8, 5))
+
+plt.plot(history.history['loss'], label="Training Loss")
+plt.plot(history.history['val_loss'], label="Validation Loss")
+
+plt.title("RNN Training Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Mean Squared Error")
+plt.legend()
+plt.grid()
+plt.show()

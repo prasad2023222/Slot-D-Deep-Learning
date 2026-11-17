@@ -1,0 +1,56 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Vector Operations
+A = np.array([2, 4, 6])
+B = np.array([1, 3, 5])
+
+print("VECTOR OPERATIONS")
+print("Vector A:", A)
+print("Vector B:", B)
+print("Addition:", A + B)
+print("Subtraction:", A - B)
+print("Multiplication:", A * B)
+print("Dot Product:", np.dot(A, B))
+
+# 2. Matrix Operations
+M1 = np.array([[1, 2], [3, 4]])
+M2 = np.array([[5, 6], [7, 8]])
+
+print("\nMATRIX OPERATIONS")
+print("Matrix M1:\n", M1)
+print("Matrix M2:\n", M2)
+print("Addition:\n", M1 + M2)
+print("Subtraction:\n", M1 - M2)
+print("Element-wise Multiplication:\n", M1 * M2)
+print("Matrix Multiplication:\n", np.dot(M1, M2))
+print("Transpose:\n", M1.T)
+print("Determinant:", np.linalg.det(M1))
+
+# 3. Vector Visualization
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 3, 1)
+plt.plot(A, marker='o', color='blue')
+plt.title("Vector Visualization")
+plt.xlabel("Index")
+plt.ylabel("Values")
+plt.grid()
+
+# 4. Matrix Visualization
+plt.subplot(1, 3, 2)
+plt.imshow(M1, cmap='viridis')
+plt.title("Matrix M1")
+plt.colorbar()
+
+# 5. Matrix Multiplication Visualization
+result = np.dot(M1, M2)
+
+plt.subplot(1, 3, 3)
+plt.imshow(result, cmap='plasma')
+plt.title("Matrix Multiplication")
+plt.colorbar()
+
+plt.tight_layout()
+plt.show()
